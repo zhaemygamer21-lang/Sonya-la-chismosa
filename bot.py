@@ -23,7 +23,7 @@ CUENTAS_A_MONITOREAR = [
     "mable_siriwatee", "apangjiew", "alinglingsirikak", "dormmorm"
 ]
 
-def enviar_a_discord(link_tweet):
+def enviar_a_discord(link_tweet, usuario):
     webhook_url = os.getenv("WEBHOOK_URL")
     if not webhook_url:
         print("Error: No se encontró la variable WEBHOOK_URL en Render.")
@@ -32,14 +32,17 @@ def enviar_a_discord(link_tweet):
     # Truco de fxtwitter para cargar FOTOS y videos automáticamente
     link_corregido = link_tweet.replace("twitter.com", "fxtwitter.com").replace("x.com", "fxtwitter.com")
 
+    # ==========================================
+    # MODIFICA AQUÍ EL MENSAJE SI DESEAS OTRO ESTILO:
     payload = {
-        "content": f"📢 **¡Nueva publicación detectada!**\n{link_corregido}"
+        "content": f"🔥 **¡A CORRER QUE HAY CHISME!** 👀\n\n📢 La cuenta **@{usuario}** acaba de subir un nuevo tweet. Míralo aquí:\n👉 {link_corregido}"
     }
+    # ==========================================
 
     try:
         response = requests.post(webhook_url, json=payload)
         if response.status_code == 204:
-            print("Publicación enviada exitosamente a Discord con previsualización.")
+            print(f"Publicación de @{usuario} enviada exitosamente a Discord.")
         else:
             print(f"Error al enviar a Discord: {response.status_code}")
     except Exception as e:
@@ -71,7 +74,8 @@ def bucle_monitoreo():
                         if link_actual != ultimo_tweet_url[usuario]:
                             print(f"¡Nuevo tweet detectado para @{usuario}!")
                             ultimo_tweet_url[usuario] = link_actual
-                            enviar_a_discord(link_actual)
+                            # Le pasamos el link y el nombre del usuario a la función
+                            enviar_a_discord(link_actual, usuario)
                 else:
                     print(f"La cuenta @{usuario} no tiene tweets públicos o está protegida por ahora.")
             
