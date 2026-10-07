@@ -33,7 +33,7 @@ def enviar_a_discord(link_tweet, usuario):
     # ==========================================
     # MODIFICA AQUÍ EL MENSAJE SI DESEAS OTRO ESTILO:
             payload = {
-        "content": f"🔥 **¡A CORRER QUE HAY CHISME!** 👀\n\n📢 La cuenta @{usuario} acaba de subir un nuevo tweet.\n👉 {link_corregido}"}
+        "content": f"🔥 **¡A CORRER QUE HAY CHISME!** 👀📢 La cuenta @{usuario} acaba de subir un nuevo tweet.\n👉 {link_corregido}"}
 
     # ==========================================
 
