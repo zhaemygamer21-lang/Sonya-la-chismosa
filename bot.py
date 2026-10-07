@@ -13,15 +13,13 @@ def home():
     return "El bot monitor de Twitter está activo y corriendo.", 200
 
 # 2. Configuración de Cuentas y Webhook
-CUENTAS_A_MONITOREAR = [
-    "Panlyyy", "_I_jayyna", "ginnynatnocha", "fay_tlezz", 
-    "itscharlotty", "Emaraha", "Yoko_apasra", "cindy_maratin", 
-    "maliisorn00", "mrchrafawn", "Angelsabecky", "PundaoSpace", 
-    "shellybenda", "lena__lorena", "miunatshaa", "nantantipartree", 
-    "filmracha", "Ciize155cm", "view_benyapa", "thasorn_official", 
-    "beonnnnie", "AppleLAPIS", "anurdesoraya", "phinyanech", 
-    "mable_siriwatee", "apangjiew", "alinglingsirikak", "dormmorm"
-]
+CUENTAS_A_MONITOREAR = ["panlyyy", "j_jayyna", "ginnynatnicha", "fay_riezz", 
+    "itscharlotty", "EWaraha", "yoko_apasra", "Cindy_Waratin", 
+    "maliisorn00", "srchafreen", "AngelssBecky", "_pundao", 
+    "shellybenda", "lena__lorena", "miunatshaa", "NamtanTipnaree", 
+    "filmracha", "Ciize155cm", "view_benyapa", "thasornofficial", 
+    "beonnnie", "AppleLAPIS", "nurdesoraya", "phinyanech", 
+    "mable_siriwalee", "pangjiewr", "alinglingsirikak", "ormmormm","Nesamahmoodii","daaddeaw1","heidi_amandajs"]
 
 def enviar_a_discord(link_tweet, usuario):
     webhook_url = os.getenv("WEBHOOK_URL")
@@ -34,7 +32,7 @@ def enviar_a_discord(link_tweet, usuario):
 
     # ==========================================
     # MODIFICA AQUÍ EL MENSAJE SI DESEAS OTRO ESTILO:
-    payload = {
+        payload = {
         "content": f"🔥 **¡A CORRER QUE HAY CHISME!** 👀\n\n📢 La cuenta **@{usuario}** acaba de subir un nuevo tweet. Míralo aquí:\n👉 {link_corregido}"
     }
     # ==========================================
