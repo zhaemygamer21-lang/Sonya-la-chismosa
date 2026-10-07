@@ -78,8 +78,3 @@ def bucle_monitoreo():
 
 # Lanzamos el bucle en un hilo separado para que Flask pueda responder a Render en paralelo
 threading.Thread(target=bucle_monitoreo, daemon=True).start()
-
-if __name__ == "__main__":
-    # Render asigna dinámicamente un puerto mediante la variable de entorno PORT
-    puerto = int(os.getenv("PORT", 10000))
-    app.run(host="0.0.0.0", port=puerto)
