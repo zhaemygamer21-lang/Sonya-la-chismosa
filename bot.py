@@ -1,130 +1,85 @@
 import os
-import sys
+import time
+import threading
+import requests
+from flask import Flask
+from ntscraper import Nitter
 
-import discord
-from discord import app_commands
-from discord.ext import commands
-from dotenv import load_dotenv
+# 1. Configuración de la mini aplicación Web para mantener vivo Render
+app = Flask(__name__)
 
-from src.checker import build_and_validate_configs, check_env, check_db, check_upgrade
-from src.log import setup_logger
+@app.route('/')
+def home():
+    return "El bot monitor de Twitter está activo y corriendo.", 200
 
-log = setup_logger(__name__)
-load_dotenv()
+# 2. Configuración de Cuentas y Webhook
+# Reemplaza con los nombres de usuario exactos de las cuentas de Twitter que quieres seguir
+CUENTAS_A_MONITOREAR = ["Panlyyy","j_jayyna","ginnynatnocha","fay_riezz","itscharlotty","EWaraha","Yoko_apasra","cindy_Waratin","malisorn00","srchafraeen","AngelssBecky","PundaoSpace","shellybenda","lena__lorena","miunatshaa","namtanTipnaree","filmracha","Ciize155cm","view_benyapa","thasornofficial","beonnnie","AppleLAPIS","nurdesoraya","phinyanech","mable_siriwalee","pangjiewr","linglingsirilak","ormmormm"]
 
-# --- Pre-boot Checks ---
-if not check_env():
-    log.critical('incomplete environment variables detected, please check your .env file. Exiting...')
-    sys.exit(1)
-
-if not build_and_validate_configs():
-    log.critical('failed to build application configuration, please check logs for details. Exiting...')
-    sys.exit(1)
-
-# --- Configs are now safe to load ---
-from configs.load_configs import configs
-from src.i18n import init_i18n
-from src.db_function.init_db import init_db
-from src.db_function.repair_db import auto_repair_mismatched_clients
-from src.presence_updater import update_presence
-
-init_i18n(configs.get('locale', 'en'))
-
-intents = discord.Intents(
-    guilds=True,
-    messages=True,
-    message_content=configs.get('enable_prefix_commands_in_guild', True),
-    emojis=True
-)
-bot = commands.Bot(command_prefix=configs['prefix'], intents=intents)
-
-
-@bot.event
-async def on_ready():
-    await init_db()
-    check_upgrade()
-        
-    invalid_clients = await check_db()
-    if invalid_clients:
-        log.warning('detected environment variable undefined client name in database')
-        if configs['auto_repair_mismatched_clients']:
-            await auto_repair_mismatched_clients(invalid_clients)
-            log.info('automatically replace mismatched client names with the first client name in the environment variable, use the sync slash command in discord to ensure notifications are turned on')
-        else:
-            log.warning('set auto_repair_mismatched_clients to true in configs to automatically fix this error or manually update the database or environment variables')
-    else:
-        log.info('database check passed')
-
-    await update_presence(bot)
-
-    bot.tree.on_error = on_tree_error
-    for filename in os.listdir('./cogs'):
-        if filename.endswith('.py'):
-            await bot.load_extension(f'cogs.{filename[:-3]}')
-    log.info(f'{bot.user} is online')
-    slash = await bot.tree.sync()
-    log.info(f'synced {len(slash)} slash commands')
-
-
-@bot.command()
-@commands.is_owner()
-async def load(ctx: commands.context.Context, extension):
-    await bot.load_extension(f'cogs.{extension}')
-    await ctx.send(f'Loaded {extension} done.')
-
-
-@bot.command()
-@commands.is_owner()
-async def unload(ctx: commands.context.Context, extension):
-    await bot.unload_extension(f'cogs.{extension}')
-    await ctx.send(f'Un - Loaded {extension} done.')
-
-
-@bot.command()
-@commands.is_owner()
-async def reload(ctx: commands.context.Context, extension):
-    await bot.reload_extension(f'cogs.{extension}')
-    await ctx.send(f'Re - Loaded {extension} done.')
-
-
-@bot.command()
-@commands.is_owner()
-async def download_log(ctx: commands.context.Context):
-    message = await ctx.send(file=discord.File('console.log'))
-    await message.delete(delay=15)
-
-
-@bot.command()
-@commands.is_owner()
-async def download_data(ctx: commands.context.Context):
-    message = await ctx.send(file=discord.File(os.path.join(os.getenv('DATA_PATH'), 'tracked_accounts.db')))
-    await message.delete(delay=15)
-
-
-@bot.command()
-@commands.is_owner()
-async def upload_data(ctx: commands.context.Context):
-    raw = await [attachment for attachment in ctx.message.attachments if attachment.filename[-3:] == '.db'][0].read()
-    with open(os.path.join(os.getenv('DATA_PATH'), 'tracked_accounts.db'), 'wb') as wbf:
-        wbf.write(raw)
-    message = await ctx.send('successfully uploaded data')
-    await message.delete(delay=5)
-
-
-@bot.event
-async def on_tree_error(itn: discord.Interaction, error: app_commands.AppCommandError):
-    await itn.response.send_message(error, ephemeral=True)
-    log.warning(f'an error occurred but was handled by the tree error handler, error message : {error}')
-
-
-@bot.event
-async def on_command_error(ctx: commands.context.Context, error: commands.errors.CommandError):
-    if isinstance(error, commands.errors.CommandNotFound):
+def enviar_a_discord(link_tweet):
+    webhook_url = os.getenv("WEBHOOK_URL")
+    if not webhook_url:
+        print("Error: No se encontró la variable WEBHOOK_URL en Render.")
         return
-    else:
-        await ctx.send(error)
-    log.warning(f'an error occurred but was handled by the command error handler, error message : {error}')
 
+    # Truco mágico: Reemplaza x.com o twitter.com por fxtwitter.com
+    # Esto obliga a Discord a cargar las FOTOS y videos automáticamente
+    link_corregido = link_tweet.replace("twitter.com", "fxtwitter.com").replace("x.com", "fxtwitter.com")
 
-if __name__ == '__main__':
-    bot.run(os.getenv('BOT_TOKEN'))
+    payload = {
+        "content": f"📢 **¡Nueva publicación detectada!**\n{link_corregido}"
+    }
+
+    try:
+        response = requests.post(webhook_url, json=payload)
+        if response.status_code == 204:
+            print("Publicación enviada exitosamente a Discord con previsualización de foto.")
+        else:
+            print(f"Error al enviar a Discord: {response.status_code}")
+    except Exception as e:
+        print(f"Error de red al conectar con Discord: {e}")
+
+# 3. Lógica del bucle de monitoreo
+def bucle_monitoreo():
+    scraper = Nitter()
+    ultimo_tweet_url = {}
+
+    print("Iniciando el escaneo de Twitter...")
+
+    while True:
+        for usuario in CUENTAS_A_MONITOREAR:
+            try:
+                # Buscamos los últimos 2 tweets del usuario de forma gratuita sin API keys
+                datos = scraper.get_tweets(usuario, mode='user', number=2)
+                
+                if datos and 'tweets' in datos and len(datos['tweets']) > 0:
+                    # El primer tweet de la lista es el más reciente
+                    ultimo_tweet = datos['tweets'][0]
+                    link_actual = ultimo_tweet.get('link')
+
+                    if link_actual:
+                        # Si es la primera vez que lee la cuenta, guarda el tweet actual para no saturar Discord con tweets viejos
+                        if usuario not in ultimo_tweet_url:
+                            ultimo_tweet_url[usuario] = link_actual
+                            print(f"Cuenta @{usuario} cargada. Esperando nuevos tweets...")
+                            continue
+
+                        # Si el link cambió, significa que hay una nueva publicación
+                        if link_actual != ultimo_tweet_url[usuario]:
+                            print(f"¡Nuevo tweet detectado para @{usuario}!")
+                            ultimo_tweet_url[usuario] = link_actual
+                            enviar_a_discord(link_actual)
+            
+            except Exception as e:
+                print(f"Error al revisar la cuenta de @{usuario}: {e}")
+        
+        # Espera 10 minutos (600 segundos) entre revisiones para evitar que bloqueen el script
+        time.sleep(600)
+
+# Lanzamos el bucle en un hilo separado para que Flask pueda responder a Render en paralelo
+threading.Thread(target=bucle_monitoreo, daemon=True).start()
+
+if __name__ == "__main__":
+    # Render asigna dinámicamente un puerto mediante la variable de entorno PORT
+    puerto = int(os.getenv("PORT", 10000))
+    app.run(host="0.0.0.0", port=puerto)
