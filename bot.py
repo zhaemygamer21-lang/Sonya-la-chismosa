@@ -17,7 +17,7 @@ CUENTAS_A_MONITOREAR = [
     "Panlyyy", "_I_jayyna", "ginnynatnocha", "fay_tlezz", 
     "itscharlotty", "Emaraha", "Yoko_apasra", "cindy_maratin", 
     "maliisorn00", "mrchrafawn", "Angelsabecky", "PundaoSpace", 
-    "shellybenda", "lena__lorena", "mlunatshaa", "nantantipartree", 
+    "shellybenda", "lena__lorena", "miunatshaa", "nantantipartree", 
     "filmracha", "Ciize155cm", "view_benyapa", "thasorn_official", 
     "beonnnnie", "AppleLAPIS", "anurdesoraya", "phinyanech", 
     "mable_siriwatee", "apangjiew", "alinglingsirikak", "dormmorm"
