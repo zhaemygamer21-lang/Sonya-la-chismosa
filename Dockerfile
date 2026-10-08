@@ -1,11 +1,14 @@
-FROM python:3.10-slim
+DEPython: 3.10-slim
 
-WORKDIR /app
+DIRECTORIO DE TRABAJO/aplicación
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPIARrequisitos.txt .
+CORRERpip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPIAR . .
 
-# Esta es la orden que le dice a Render que use tu script directamente
-CMD ["python", "bot.py"]
+# Abre el puerto para enlazarlo con Render
+EXPOSE 8080
+
+#Esta es la orden que le dice a Render que usa tu script directamente
+CMD["pitón", "bot.py"]
