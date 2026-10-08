@@ -56,7 +56,7 @@ def bucle_monitoreo():
         for usuario in CUENTAS_A_MONITOREAR:
             try:
                 # Usamos una instancia RSS funcional para extraer tweets públicos
-                url_rss = f"https://kareem.one{usuario}/rss"
+                url_rss = f"https://privacydev.net{usuario}/rss"
                 response = requests.get(url_rss, timeout=15)
                 
                 if response.status_code == 200 and "<item>" in response.text:
