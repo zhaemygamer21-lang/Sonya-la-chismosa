@@ -8,7 +8,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 CUENTAS_A_MONITOREAR = [
     "Lookmheewang", "sonyasarann", "panlyyy", "j_jayyna", "ginnynatnicha", "fay_riezz",
     "itscharlotty", "EWaraha", "yoko_apasra", "Cindy_Warat", "malisorn00", "srchafreen",
-    "AngelssBecky", "_pundao", "shellybenda", "lena__lorena", "miunatshaa", "NamtanTipnaree",
+    "AngelssBecky", "_pundao", "thasornofficial", "shellybenda", "lena__lorena", "miunatshaa", "NamtanTipnaree",
     "filmracha", "Ciize155cm", "view_benyapa", "thasornorfficial", "beonnnie", "AppleLAPIS",
     "nurdesoraya", "phinyanech", "mable_siriwalee", "pangjiewr", "linglingsirilak", "ormmormm",
     "Nesamahmoodii", "daaddeaw1", "heidi_amanda_js", "janeeeyeh", "XZhae23153"
