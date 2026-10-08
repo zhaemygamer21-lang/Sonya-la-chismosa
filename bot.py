@@ -45,10 +45,10 @@ KEYWORDS = [
     "Pitcha", "Meo-Meow", "Jennis", "Tarwaan", "Kaew", "Spy", "Yipun", "FRT", "Star Hunter", "North Star",
     "GMMTV", "CHANGE2561", "Channel 3", "IDOLFACTORY", "MGI", "Beyond", "MeMindY", "VelCurve", "MONOMAX",
     "S.NUR", "Fabel", "Motion Minds", "Kongthup", "SiamSi", "WanneeWandee", "Conversation Thailand",
-    "faridasrd", "Farida"  # <-- NUEVA ACTRIZ AGREGADA AQUÍ
+    "faridasrd", "Farida", "Solenn", "4EVE", "PP Krit", "Billkin", "Bowkylion", "Nont Tanont"
 ]
 
-# RED DE MONITOREO EXPANDIDA (PORTALES + YOUTUBE)
+# RED DE MONITOREO TOTALMENTE ACTUALIZADA (7 PORTALES + 11 CANALES DE YOUTUBE)
 FUENTES_RSS = {
     # Portales de Noticias, Chismes y Foros Internacionales
     "Daradaily (Chismes Thai)": "https://daradaily.com",
@@ -59,16 +59,20 @@ FUENTES_RSS = {
     "Reddit r/ThaiBL (Comunidad General)": "https://reddit.com",
     "Reddit r/kpop (BLACKPINK Updates)": "https://reddit.com",
     
-    # Canales de YouTube de Productoras y Prensa Especializada Thai
+    # Canales de YouTube de Productoras, Canales Propios y Prensa Thai
     "YouTube GMMTV Oficial": "https://youtube.com",
     "YouTube IDOLFACTORY": "https://youtube.com",
     "YouTube MGI Grand TV": "https://youtube.com",
     "YouTube NineEntertain (Prensa)": "https://youtube.com",
     "YouTube News Plus (Entrevistas)": "https://youtube.com",
+    "YouTube Becky Armstrong Official": "https://youtube.com",
+    "YouTube Solenn Entertainment": "https://youtube.com",
     
-    # Canales Solicitados de Creadoras de Contenido GL (En Español)
+    # Canales de Fans en Español e Industria de Música T-Pop Populares
     "YouTube Yulirvi GL": "https://youtube.com",
-    "YouTube Cindy Waratin": "https://youtube.com"
+    "YouTube Cindy Waratin": "https://youtube.com",
+    "YouTube T-POP Stage Show (Música)": "https://youtube.com",
+    "YouTube 4EVE Official (Grupo Pop)": "https://youtube.com"
 }
 
 class Servidor(BaseHTTPRequestHandler):
@@ -164,12 +168,5 @@ def bucle_monitoreo():
                         if link_actual != ultimas_noticias[nombre_fuente]:
                             ultimas_noticias[nombre_fuente] = link_actual
                             
-                            # Filtro inteligente (Para canales de fans, foros o periódicos)
+                            # Filtro inteligente
                             if coincide_con_actrices(titulo_actual):
-                                enviar_a_discord(link_actual, titulo_actual, nombre_fuente, foto_actual)
-            except Exception:
-                pass
-        time.sleep(600)  # Escaneo general cada 10 minutos
-
-if __name__ == "__main__":
-    bucle_monitoreo()
