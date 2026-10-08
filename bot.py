@@ -3,7 +3,6 @@ import time
 import threading
 import requests
 from flask import Flask
-from ntscraper import Nitter
 
 # 1. Configuración de la mini aplicación Web para mantener vivo Render
 app = Flask(__name__)
@@ -50,37 +49,41 @@ def enviar_a_discord(link_tweet, usuario):
 
 # 3. Lógica del bucle de monitoreo
 def bucle_monitoreo():
-    scraper = Nitter()
     ultimo_tweet_url = {}
-
     print("Iniciando el escaneo de Twitter...")
-
+    
     while True:
         for usuario in CUENTAS_A_MONITOREAR:
             try:
-                # Buscamos los últimos tweets
-                datos = scraper.get_tweets(usuario, mode='user', number=2)
+                # Usamos una instancia RSS funcional para extraer tweets públicos
+                url_rss = f"https://kareem.one{usuario}/rss"
+                response = requests.get(url_rss, timeout=15)
                 
-                if datos and 'tweets' in datos and isinstance(datos['tweets'], list) and len(datos['tweets']) > 0:
-                    ultimo_tweet = datos['tweets'][0]
-                    link_actual = ultimo_tweet.get('link')
-
+                if response.status_code == 200 and "<item>" in response.text:
+                    texto = response.text
+                    inicio_link = texto.find("<link>") + 6
+                    fin_link = texto.find("</link>")
+                    link_actual = texto[inicio_link:fin_link].strip()
+                    
                     if link_actual:
                         if usuario not in ultimo_tweet_url:
                             ultimo_tweet_url[usuario] = link_actual
                             print(f"Cuenta @{usuario} cargada correctamente.")
                             continue
-
+                        
                         if link_actual != ultimo_tweet_url[usuario]:
-                            print(f"¡Nuevo tweet detectado para @{usuario}!")
                             ultimo_tweet_url[usuario] = link_actual
-                            # Le pasamos el link y el nombre del usuario a la función
+                            print(f"¡Nuevo tweet detectado para @{usuario}!")
                             enviar_a_discord(link_actual, usuario)
                 else:
-                    print(f"La cuenta @{usuario} no tiene tweets públicos o está protegida por ahora.")
+                    print(f"Saltando temporalmente a @{usuario} debido a una restricción de Twitter.")
             
             except Exception as e:
-                print(f"Saltando temporalmente a @{usuario} debido a una restricción de Twitter.")
+                print(f"Error escaneando a @{usuario}: {e}")
+        
+        # Espera 10 minutos antes de volver a revisar
+        time.sleep(600)
+
         
         # Espera 10 minutos entre revisiones
         time.sleep(600)
