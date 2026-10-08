@@ -2,26 +2,76 @@ import os
 import time
 import requests
 import threading
+import re
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-# LISTA MAESTRA DE USUARIOS ORIGINALES
-CUENTAS_A_MONITOREAR = [
-    "Lookmheewang", "sonyasarann", "panlyyy", "j_jayyna", "ginnynatnicha", "fay_riezz",
-    "itscharlotty", "EWaraha", "yoko_apasra", "Cindy_Warat", "malisorn00", "srchafreen",
-    "AngelssBecky", "_pundao", "thasornofficial", "shellybenda", "lena__lorena", "miunatshaa", "NamtanTipnaree",
-    "filmracha", "Ciize155cm", "view_benyapa", "thasornorfficial", "beonnnie", "AppleLAPIS",
-    "nurdesoraya", "phinyanech", "mable_siriwalee", "pangjiewr", "linglingsirilak", "ormmormm",
-    "Nesamahmoodii", "daaddeaw1", "heidi_amanda_js", "janeeeyeh", "XZhae23153"
+WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
+
+# TU LISTA MAESTRA DE FILTRADO (Nombres, Shipps y Agencias)
+KEYWORDS = [
+    "Freen", "Sarocha", "Chankimha", "FreenBecky", "Becky", "Armstrong", "Lingling", "Sirilak", "Kwong",
+    "Orm", "Kornnaphat", "Sethratanapong", "LingOrm", "Lena", "Lalina", "Schuett", "Miu", "Natsha",
+    "Taechamongkalapiwat", "LenaMiu", "Faye", "Peraya", "Malisorn", "Atom", "Pariya", "Piyapanopas",
+    "FayeAtom", "Lookmhee", "Punyapat", "Wangpongsathorn", "Sonya", "Saranphat", "Pedersen", "LMSY",
+    "Namtan", "Tipnaree", "Weerawatnodom", "Film", "Rachanun", "Mahawan", "NamtanFilm", "Milk", "Pansa",
+    "Vosbein", "Love", "Pattranite", "Limpatiyakorn", "MilkLove", "View", "Benyapa", "Jeenprasom", "Mim",
+    "Rattanawadee", "Wongthong", "ViewMim", "Ginny", "Natnicha", "Pratipnatsiri", "Jayna", "Angelina",
+    "Stevens", "GinnyJayna", "Engfa", "Waraha", "Charlotte", "Austin", "EngLot", "Apple", "Lapisara",
+    "Intarasut", "Panthita", "AppleMim", "Nile", "Chanidapa", "Sommitthanakul", "Namwan", "Natchaya",
+    "Vongbut", "NileNamwan", "Lilly", "Ladapa", "Thongkham", "Belle", "Jiratchaya", "Kittavornsakul",
+    "LillyBelle", "Namneung", "Milin", "Dokthian", "Noey", "Kanteera", "Wadcharathadsanakul", "NamneungNoey",
+    "Aphichaya", "Kamnoetsirikun", "Mersedes", "Kanyawee", "Songmuang", "AtomMersedes", "Bam", "Saralee",
+    "Prasitdumrong", "Baipor", "Thitiya", "Jirapornsilp", "BamBamBaipor", "Tan", "Duangkaew", "Piyaoui",
+    "Yada", "Narilya", "Gulmongkolpech", "TanYada", "June", "Nannirin", "Nippitthanon", "Enjoy", "Thidarat",
+    "Chareonchaichana", "JuneEnjoy", "Fah", "Rachaya", "Nirinsawad", "Bell", "Patchamon", "Punyapidthaya",
+    "FahBell", "Ormsin", "Supitcha", "Limsommut", "Folk", "Sutima", "Kruakitticharoen", "OrmsinFolk", "Anda",
+    "Anunta", "Teavirat", "Lookkaew", "Kamollak", "Sangsubsin", "AndaLookkaew", "Noon", "Thunyaphat",
+    "Inyawilert", "Praewa", "Putticha", "Boonyamas", "NoonPraewa", "Tungpang", "Pattaravadee", "Laosa",
+    "Jessie", "Rattikarn", "TungpangJessie", "Tangkwa", "Phinyanech", "Nur", "Disraya", "Techapaibun",
+    "TangkwaNur", "Shelly", "Phetsai", "Chanrueng-Benda", "Pundao", "Panyabaramee", "ShellyPundao", "Garn",
+    "Nuttacha", "Mimie", "Wanthong", "GarnMimie", "May", "Yada", "Watcharamethakul", "MayNita", "Nita",
+    "Anipan", "Chalermburanawong", "Minnie", "Thanawin", "Pannie", "MinniePannie", "Bommy", "Nontarat",
+    "Netipoh", "Ning", "Nicharut", "Sakkasemrut", "BommyNing", "Meena", "Rina", "Chayakorn", "Aoom",
+    "Thaweeporn", "Phingchamrat", "MeenaAoom", "Yuyee", "Alisa", "Intusmith", "Mint", "Mintita", "Wattanakul",
+    "Care", "Chattarika", "Sittiprom", "Prigkhing", "Sureeyares", "Yakares", "Ratchayangkanont",
+    "Bhapat", "Ahchariyasripong", "Charada", "Imraporn", "Chutimon", "Prasanwan", "Evarin", "Atichaichaowakit",
+    "Plaifa", "Fay", "Apisara", "Jeanie", "Ornlin", "BamBam", "Thitaree", "Ciize", "Rutricha", "Phapakithi",
+    "Emi", "Thasorn", "Klinnium", "Bonnie", "Pattraphus", "Borattasuwan", "Jan", "Ployshompoo", "Supasap",
+    "JingJing", "Yu", "Kapook", "Ploynira", "Hiruntaveesin", "Jaoying", "Chawalitporn", "Pusomjit", "Mewnich",
+    "Nannaphas", "Lertvilai", "Pahn", "Pathitta", "Pornsukchai", "Fond", "Nattanicha", "Chantaravareelekha",
+    "Oom", "Eisaya", "Hosuwan", "Bint", "Sireethorn", "Leearamwat", "Puinoon", "Warangsiri", "Tanajarusworaphat",
+    "Kanyaphat", "Na", "Nakhon", "FayMay", "Neko", "Jennie", "Lisa", "Jisoo", "Rosé", "BLACKPINK", "Mie",
+    "Phattaranan", "Aya", "Orapan", "Kao", "Supassara", "Thanachart", "Jane", "Methika", "Ornstein", "Natt",
+    "Pitcha", "Meo-Meow", "Jennis", "Tarwaan", "Kaew", "Spy", "Yipun", "FRT", "Star Hunter", "North Star",
+    "GMMTV", "CHANGE2561", "Channel 3", "IDOLFACTORY", "MGI", "Beyond", "MeMindY", "VelCurve", "MONOMAX",
+    "S.NUR", "Fabel", "Motion Minds", "Kongthup", "SiamSi", "WanneeWandee", "Conversation Thailand"
 ]
 
-WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
+# RED DE MONITOREO EXPANDIDA (VARIEDAD MÁXIMA SIN BLOQUEOS)
+FUENTES_RSS = {
+    # Portales de Noticias, Chismes y Foros Internacionales
+    "Daradaily (Chismes Thai)": "https://daradaily.com",
+    "Sanook (Fotos Actrices)": "https://sanook.com",
+    "Komchadluek (Prensa Farándula)": "https://komchadluek.net",
+    "MyDramaList (Noticias de Series GL)": "https://mydramalist.com",
+    "Reddit r/GirlsLove (Fotos/Fans)": "https://reddit.com",
+    "Reddit r/ThaiBL (Comunidad General)": "https://reddit.com",
+    "Reddit r/kpop (BLACKPINK Updates)": "https://reddit.com",
+    
+    # Canales de YouTube de Productoras y Prensa Especializada Thai
+    "YouTube GMMTV Oficial": "https://youtube.com",
+    "YouTube IDOLFACTORY": "https://youtube.com",
+    "YouTube MGI Grand TV": "https://youtube.com",
+    "YouTube NineEntertain (Prensa)": "https://youtube.com",
+    "YouTube News Plus (Entrevistas)": "https://youtube.com"
+}
 
 class Servidor(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.send_header("Content-type", "text/plain")
         self.end_headers()
-        self.wfile.write(b"Bot activo")
+        self.wfile.write(b"Bot Variedad Farandula Activo")
 
     def do_HEAD(self):
         self.send_response(200)
@@ -34,45 +84,87 @@ def run_server():
 
 threading.Thread(target=run_server, daemon=True).start()
 
-def enviar_a_discord(link, usuario):
+def enviar_a_discord(link, titulo, fuente, imagen_url=None):
+    if "YouTube" in fuente:
+        prefix = "🚨 ¡¡SALIÓ CAPÍTULO O VIDEO NUEVO!! 🎬🍿"
+    else:
+        prefix = "¡¡A CORRER QUE HAY CHISME!! 👀 🚨"
+
     payload = {
-        "content": f"**¡¡A CORRER QUE HAY CHISME!!** 👀 🚨 La cuenta @{usuario} acaba de subir un nuevo tweet. ✨ {link}"
+        "content": f"**{prefix}**\n\n📢 **Fuente:** {fuente}\n📌 **Título:** {titulo}\n\n✨ Enlace directo:\n{link}"
     }
+    
+    if imagen_url:
+        payload["embeds"] = [{"image": {"url": imagen_url}}]
+
     try:
-        requests.post(WEBHOOK_URL, json=payload, timeout=10)
+        headers = {"User-Agent": "Mozilla/5.0"}
+        requests.post(WEBHOOK_URL, json=payload, headers=headers, timeout=10)
     except Exception:
         pass
 
+def extraer_imagen(item_texto):
+    try:
+        url_match = re.search(r'<media:content[^>]*url="([^"]+)"', item_texto)
+        if not url_match:
+            url_match = re.search(r'<enclosure[^>]*url="([^"]+)"', item_texto)
+        if not url_match:
+            url_match = re.search(r'<img[^>]*src="([^"]+)"', item_texto)
+        if url_match:
+            return url_match.group(1).strip()
+    except Exception:
+        pass
+    return None
+
+def coincide_con_actrices(texto_a_revisar):
+    texto_minusculas = texto_a_revisar.lower()
+    for kw in KEYWORDS:
+        if kw.lower() in texto_minusculas:
+            return True
+    return False
+
 def bucle_monitoreo():
-    ultimo_tweet_url = {}
+    ultimas_noticias = {}
+    print("Iniciando escaneo masivo multi-plataforma...")
     
     while True:
-        for usuario in CUENTAS_A_MONITOREAR:
+        for nombre_fuente, url_rss in FUENTES_RSS.items():
             try:
-                # Cambiado a un lector alternativo que sí responde correctamente
-                url_rss = f"https://privacydev.net{usuario}/rss"
-                response = requests.get(url_rss, timeout=15)
+                headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+                response = requests.get(url_rss, headers=headers, timeout=15)
                 
                 if response.status_code == 200 and "<item>" in response.text:
                     texto = response.text
-                    inicio_link = texto.find("<link>") + 6
-                    fin_link = texto.find("</link>")
-                    link_actual = texto[inicio_link:fin_link].strip()
+                    primer_item = texto[texto.find("<item>"):texto.find("</item>")+7]
+                    
+                    # Extraer enlace
+                    inicio_link = primer_item.find("<link>") + 6
+                    fin_link = primer_item.find("</link>")
+                    link_actual = primer_item[inicio_link:fin_link].strip()
+                    link_actual = link_actual.replace("<![CDATA[", "").replace("]]>", "")
+                    
+                    # Extraer título
+                    inicio_title = primer_item.find("<title>") + 7
+                    fin_title = primer_item.find("</title>")
+                    titulo_actual = primer_item[inicio_title:fin_title].strip()
+                    titulo_actual = titulo_actual.replace("<![CDATA[", "").replace("]]>", "")
+                    
+                    foto_actual = extraer_imagen(primer_item)
                     
                     if link_actual:
-                        # Si el link viene de nitter, lo convertimos a link real de twitter para ti
-                        link_actual = link_actual.replace("nitter.privacydev.net", "twitter.com")
-                        
-                        if usuario not in ultimo_tweet_url:
-                            ultimo_tweet_url[usuario] = link_actual
+                        if nombre_fuente not in ultimas_noticias:
+                            ultimas_noticias[nombre_fuente] = link_actual
                             continue
                             
-                        if link_actual != ultimo_tweet_url[usuario]:
-                            ultimo_tweet_url[usuario] = link_actual
-                            enviar_a_discord(link_actual, usuario)
+                        if link_actual != ultimas_noticias[nombre_fuente]:
+                            ultimas_noticias[nombre_fuente] = link_actual
+                            
+                            # Filtro inteligente
+                            if coincide_con_actrices(titulo_actual):
+                                enviar_a_discord(link_actual, titulo_actual, nombre_fuente, foto_actual)
             except Exception:
                 pass
-        time.sleep(600)
+        time.sleep(600)  # Escaneo general cada 10 minutos
 
 if __name__ == "__main__":
     bucle_monitoreo()
