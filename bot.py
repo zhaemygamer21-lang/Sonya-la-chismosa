@@ -44,10 +44,11 @@ KEYWORDS = [
     "Phattaranan", "Aya", "Orapan", "Kao", "Supassara", "Thanachart", "Jane", "Methika", "Ornstein", "Natt",
     "Pitcha", "Meo-Meow", "Jennis", "Tarwaan", "Kaew", "Spy", "Yipun", "FRT", "Star Hunter", "North Star",
     "GMMTV", "CHANGE2561", "Channel 3", "IDOLFACTORY", "MGI", "Beyond", "MeMindY", "VelCurve", "MONOMAX",
-    "S.NUR", "Fabel", "Motion Minds", "Kongthup", "SiamSi", "WanneeWandee", "Conversation Thailand"
+    "S.NUR", "Fabel", "Motion Minds", "Kongthup", "SiamSi", "WanneeWandee", "Conversation Thailand",
+    "faridasrd", "Farida"  # <-- NUEVA ACTRIZ AGREGADA AQUÍ
 ]
 
-# RED DE MONITOREO EXPANDIDA (VARIEDAD MÁXIMA SIN BLOQUEOS)
+# RED DE MONITOREO EXPANDIDA (PORTALES + YOUTUBE)
 FUENTES_RSS = {
     # Portales de Noticias, Chismes y Foros Internacionales
     "Daradaily (Chismes Thai)": "https://daradaily.com",
@@ -63,7 +64,11 @@ FUENTES_RSS = {
     "YouTube IDOLFACTORY": "https://youtube.com",
     "YouTube MGI Grand TV": "https://youtube.com",
     "YouTube NineEntertain (Prensa)": "https://youtube.com",
-    "YouTube News Plus (Entrevistas)": "https://youtube.com"
+    "YouTube News Plus (Entrevistas)": "https://youtube.com",
+    
+    # Canales Solicitados de Creadoras de Contenido GL (En Español)
+    "YouTube Yulirvi GL": "https://youtube.com",
+    "YouTube Cindy Waratin": "https://youtube.com"
 }
 
 class Servidor(BaseHTTPRequestHandler):
@@ -159,7 +164,7 @@ def bucle_monitoreo():
                         if link_actual != ultimas_noticias[nombre_fuente]:
                             ultimas_noticias[nombre_fuente] = link_actual
                             
-                            # Filtro inteligente
+                            # Filtro inteligente (Para canales de fans, foros o periódicos)
                             if coincide_con_actrices(titulo_actual):
                                 enviar_a_discord(link_actual, titulo_actual, nombre_fuente, foto_actual)
             except Exception:
