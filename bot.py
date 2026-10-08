@@ -19,7 +19,8 @@ CUENTAS_A_MONITOREAR = ["panlyyy", "j_jayyna", "ginnynatnicha", "fay_riezz",
     "shellybenda", "lena__lorena", "miunatshaa", "NamtanTipnaree", 
     "filmracha", "Ciize155cm", "view_benyapa", "thasornofficial", 
     "beonnnie", "AppleLAPIS", "nurdesoraya", "phinyanech", 
-    "mable_siriwalee", "pangjiewr", "linglingsirikak", "ormmormm","Nesamahmoodii","daaddeaw1","heidi_amandajs"]
+    "mable_siriwalee", "pangjiewr", "linglingsirikak", "ormmormm",
+    "Nesamahmoodii","daaddeaw1","heidi_amandajs","janeeeyeh","XZhae23153"]
 
 def enviar_a_discord(link_tweet, usuario):
     webhook_url = os.getenv("WEBHOOK_URL")
