@@ -1,62 +1,55 @@
 import os
 import time
-import threading
 import requests
-from flask import Flask
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
-# 1. Configuración de la mini aplicación Web para mantener vivo Render
-app = Flask(__name__)
+# LISTA MAESTRA DE USUARIOS CORREGIDA
+CUENTAS_A_MONITOREAR = [
+    "Lookmheewang", "sonyasarann", "panlyyy", "j_jayyna", "ginnynatnicha", "fay_riezz", 
+    "itscharlotty", "EWaraha", "yoko_apasra", "Cindy_Waratin", "maliisorn00", "srchafreen", 
+    "AngelssBecky", "_pundao", "shellybenda", "lena__lorena", "miunatshaa", "NamtanTipnaree", 
+    "filmracha", "Ciize155cm", "view_benyapa", "thasornofficial", "beonnnie", "AppleLAPIS", 
+    "nurdesoraya", "phinyanech", "mable_siriwalee", "pangjiewr", "linglingsirikak", "ormmormm", 
+    "Nesamahmoodii", "daaddeaw1", "heidi_amandajs", "janeeeyeh", "XZhae23153"
+]
 
-@app.route('/')
-def home():
-    return "El bot monitor de Twitter está activo y corriendo.", 200
+WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
-# 2. Configuración de Cuentas y Webhook
-CUENTAS_A_MONITOREAR = ["panlyyy", "j_jayyna", "ginnynatnicha", "fay_riezz", 
-    "itscharlotty", "EWaraha", "yoko_apasra", "Cindy_Waratin", 
-    "maliisorn00", "srchafreen", "AngelssBecky", "_pundao", 
-    "shellybenda", "lena__lorena", "miunatshaa", "NamtanTipnaree", 
-    "filmracha", "Ciize155cm", "view_benyapa", "thasornofficial", 
-    "beonnnie", "AppleLAPIS", "nurdesoraya", "phinyanech", 
-    "mable_siriwalee", "pangjiewr", "linglingsirikak", "ormmormm",
-    "Nesamahmoodii","daaddeaw1","heidi_amandajs","janeeeyeh","XZhae23153"]
+# SERVIDOR WEB INMEDIATO PARA EVITAR EL TIMEOUT DE RENDER
+class FakeServer(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"Bot activo")
 
-def enviar_a_discord(link_tweet, usuario):
-    webhook_url = os.getenv("WEBHOOK_URL")
-    if not webhook_url:
-        print("Error: No se encontró la variable WEBHOOK_URL en Render.")
-        return
+def run_server():
+    port = int(os.environ.get("PORT", 8080))
+    server = HTTPServer(("0.0.0.0", port), FakeServer)
+    server.serve_forever()
 
-    # Truco de fxtwitter para cargar FOTOS y videos automáticamente
-    link_corregido = link_tweet.replace("twitter.com", "fxtwitter.com").replace("x.com", "fxtwitter.com")
+threading.Thread(target=run_server, daemon=True).start()
 
-    # ==========================================
-    # MODIFICA AQUÍ EL MENSAJE SI DESEAS OTRO ESTILO:
+def enviar_a_discord(link, usuario):
     payload = {
-            "content": f" **A CORRER QUE HAY CHISME!** La cuenta @{usuario} acaba de subir un nuevo tweet. {link_corregido}"
+        "content": f"**¡A CORRER QUE HAY CHISME!** 👀 📢 La cuenta @{usuario} acaba de subir un nuevo tweet. 👉 {link}"
     }
-
-    # ==========================================
-
     try:
-        response = requests.post(webhook_url, json=payload)
-        if response.status_code == 204:
-            print(f"Publicación de @{usuario} enviada exitosamente a Discord.")
-        else:
-            print(f"Error al enviar a Discord: {response.status_code}")
-    except Exception as e:
-        print(f"Error de red al conectar con Discord: {e}")
+        requests.post(WEBHOOK_URL, json=payload, timeout=10)
+    except Exception:
+        pass
 
-# 3. Lógica del bucle de monitoreo
+# BUCLE DE MONITOREO ESTABLE
 def bucle_monitoreo():
     ultimo_tweet_url = {}
-    print("Iniciando el escaneo de Twitter...")
+    print("Iniciando escaneo...")
     
     while True:
         for usuario in CUENTAS_A_MONITOREAR:
             try:
-                # Usamos una instancia RSS funcional para extraer tweets públicos
-                url_rss = f"https://twitrss.me{usuario}"
+                # Usamos el lector público estable y directo
+                url_rss = f"https://net-b.space{usuario}/rss"
                 response = requests.get(url_rss, timeout=15)
                 
                 if response.status_code == 200 and "<item>" in response.text:
@@ -68,25 +61,15 @@ def bucle_monitoreo():
                     if link_actual:
                         if usuario not in ultimo_tweet_url:
                             ultimo_tweet_url[usuario] = link_actual
-                            print(f"Cuenta @{usuario} cargada correctamente.")
+                            print(f"Cuenta @{usuario} lista.")
                             continue
                         
                         if link_actual != ultimo_tweet_url[usuario]:
                             ultimo_tweet_url[usuario] = link_actual
-                            print(f"¡Nuevo tweet detectado para @{usuario}!")
                             enviar_a_discord(link_actual, usuario)
-                else:
-                    print(f"Saltando temporalmente a @{usuario} debido a una restricción de Twitter.")
-            
-            except Exception as e:
-                print(f"Error escaneando a @{usuario}: {e}")
-        
-        # Espera 10 minutos antes de volver a revisar
+            except Exception:
+                pass
         time.sleep(600)
 
-        
-        # Espera 10 minutos entre revisiones
-        time.sleep(600)
-
-# Lanzamos el bucle en un hilo separado
-threading.Thread(target=bucle_monitoreo, daemon=True).start()
+if __name__ == "__main__":
+    bucle_monitoreo()
