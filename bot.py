@@ -164,8 +164,7 @@ def bucle_monitoreo():
                         if nombre_fuente not in ultimas_noticias:
                             ultimas_noticias[nombre_fuente] = link_actual
                             continue
-                            
-                        if link_actual != ultimas_noticias[nombre_fuente]:
+                    if link_actual != ultimas_noticias[nombre_fuente]:
                             ultimas_noticias[nombre_fuente] = link_actual
                             
                             # Filtro inteligente
