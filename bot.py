@@ -127,11 +127,7 @@ def extraer_imagen(item_texto):
 
 def coincide_con_actrices(texto_a_revisar):
     texto_minusculas = texto_a_revisar.lower()
-    for kw in KEYWORDS:
-        if kw.lower() in texto_minusculas:
-            return True
-    return False
-
+    # BUCLE DE MONITOREO TOTALMENTE PLANO Y COMPACTO
 def bucle_monitoreo():
     ultimas_noticias = {}
     print("Iniciando escaneo masivo multi-plataforma...")
@@ -139,33 +135,40 @@ def bucle_monitoreo():
     while True:
         for nombre_fuente, url_rss in FUENTES_RSS.items():
             try:
-                headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+                headers = {"User-Agent": "Mozilla/5.0"}
                 response = requests.get(url_rss, headers=headers, timeout=15)
+                if response.status_code != 200 or "<item>" not in response.text:
+                    continue
+                    
+                texto = response.text
+                primer_item = texto[texto.find("<item>"):texto.find("</item>")+7]
                 
-                if response.status_code == 200 and "<item>" in response.text:
-                    texto = response.text
-                    primer_item = texto[texto.find("<item>"):texto.find("</item>")+7]
+                # Extraer enlace de forma directa
+                inicio_link = primer_item.find("<link>") + 6
+                fin_link = primer_item.find("</link>")
+                link_actual = primer_item[inicio_link:fin_link].strip().replace("<![CDATA[", "").replace("]]>", "")
+                
+                # Extraer título de forma directa
+                inicio_title = primer_item.find("<title>") + 7
+                fin_title = primer_item.find("</title>")
+                titulo_actual = primer_item[inicio_title:fin_title].strip().replace("<![CDATA[", "").replace("]]>", "")
+                
+                foto_actual = extraer_imagen(primer_item)
+                
+                if not link_actual:
+                    continue
                     
-                    # Extraer enlace
-                    inicio_link = primer_item.find("<link>") + 6
-                    fin_link = primer_item.find("</link>")
-                    link_actual = primer_item[inicio_link:fin_link].strip()
-                    link_actual = link_actual.replace("<![CDATA[", "").replace("]]>", "")
+                if nombre_fuente not in ultimas_noticias:
+                    ultimas_noticias[nombre_fuente] = link_actual
+                    continue
                     
-                    # Extraer título
-                    inicio_title = primer_item.find("<title>") + 7
-                    fin_title = primer_item.find("</title>")
-                    titulo_actual = primer_item[inicio_title:fin_title].strip()
-                    titulo_actual = titulo_actual.replace("<![CDATA[", "").replace("]]>", "")
-                    
-                    foto_actual = extraer_imagen(primer_item)
-                    
-                    if link_actual:
-                        if nombre_fuente not in ultimas_noticias:
-                            ultimas_noticias[nombre_fuente] = link_actual
-                            continue
-                    if link_actual != ultimas_noticias[nombre_fuente]:
-                            ultimas_noticias[nombre_fuente] = link_actual
-                            
-                            # Filtro inteligente
-                            if coincide_con_actrices(titulo_actual):
+                if link_actual != ultimas_noticias[nombre_fuente]:
+                    ultimas_noticias[nombre_fuente] = link_actual
+                    if coincide_con_actrices(titulo_actual):
+                        enviar_a_discord(link_actual, titulo_actual, nombre_fuente, foto_actual)
+            except Exception:
+                pass
+        time.sleep(600)
+
+if __name__ == "__main__":
+    bucle_monitoreo()
