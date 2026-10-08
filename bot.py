@@ -17,17 +17,22 @@ CUENTAS_A_MONITOREAR = [
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
 # SERVIDOR WEB INMEDIATO PARA EVITAR EL TIMEOUT DE RENDER
-class FakeServer(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header("Content-type", "text/plain")
-        self.end_headers()
-        self.wfile.write(b"Bot activo")
+class Servidor(Controlador_de_solicitud_HTTP_base):
+    def hacer_OBTENER(ser):
+        ser.enviar_respuesta(200)
+        ser.enviar_encabezado("Tipo de contenido", "texto/plano")
+        ser.fin_de_encabezados()
+        ser.archivo_w.escribir(b"Bot activo")
 
-def run_server():
-    port = int(os.environ.get("PORT", 8080))
-    server = HTTPServer(("0.0.0.0", port), FakeServer)
-    server.serve_forever()
+    def hacer_HEAD(ser):
+        ser.enviar_respuesta(200)
+        ser.fin_de_encabezados()
+
+
+     def run_server():
+         port = int(os.environ.get("PORT", 8080))
+         server = HTTPServer(("0.0.0.0", port), FakeServer)
+         server.serve_forever()
 
 threading.Thread(target=run_server, daemon=True).start()
 
