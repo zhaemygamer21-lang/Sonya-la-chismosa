@@ -7,7 +7,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
-# TU LISTA MAESTRA DE FILTRADO (Nombres, Shipps y Agencias)
+# TU LISTA MAESTRA DE FILTRADO REINTEGRADA
 KEYWORDS = [
     "Freen", "Sarocha", "Chankimha", "FreenBecky", "Becky", "Armstrong", "Lingling", "Sirilak", "Kwong",
     "Orm", "Kornnaphat", "Sethratanapong", "LingOrm", "Lena", "Lalina", "Schuett", "Miu", "Natsha",
@@ -17,7 +17,7 @@ KEYWORDS = [
     "Vosbein", "Love", "Pattranite", "Limpatiyakorn", "MilkLove", "View", "Benyapa", "Jeenprasom", "Mim",
     "Rattanawadee", "Wongthong", "ViewMim", "Ginny", "Natnicha", "Pratipnatsiri", "Jayna", "Angelina",
     "Stevens", "GinnyJayna", "Engfa", "Waraha", "Charlotte", "Austin", "EngLot", "Apple", "Lapisara",
-    "Intarasut", "Panthita", "AppleMim", "Nile", "Chanidapa", "Sommitthanakul", "Namwan", "Natchaya",
+    "Intausmut", "Panthita", "AppleMim", "Nile", "Chanidapa", "Sommitthanakul", "Namwan", "Natchaya",
     "Vongbut", "NileNamwan", "Lilly", "Ladapa", "Thongkham", "Belle", "Jiratchaya", "Kittavornsakul",
     "LillyBelle", "Namneung", "Milin", "Dokthian", "Noey", "Kanteera", "Wadcharathadsanakul", "NamneungNoey",
     "Aphichaya", "Kamnoetsirikun", "Mersedes", "Kanyawee", "Songmuang", "AtomMersedes", "Bam", "Saralee",
@@ -48,18 +48,14 @@ KEYWORDS = [
     "faridasrd", "Farida", "Solenn", "4EVE", "PP Krit", "Billkin", "Bowkylion", "Nont Tanont"
 ]
 
-# RED DE MONITOREO TOTALMENTE ACTUALIZADA (7 PORTALES + 11 CANALES DE YOUTUBE)
+# FUENTES 100% LIBRES DE BL (SOLO PORTALES THAI Y GRUPOS SÁFICOS)
 FUENTES_RSS = {
-    # Portales de Noticias, Chismes y Foros Internacionales
     "Daradaily (Chismes Thai)": "https://daradaily.com",
     "Sanook (Fotos Actrices)": "https://sanook.com",
-    "Komchadluek (Prensa Farándula)": "https://komchadluek.net",
+    "Komchadluek (Prensa Farandula)": "https://komchadluek.net",
     "MyDramaList (Noticias de Series GL)": "https://mydramalist.com",
-    "Reddit r/GirlsLove (Fotos/Fans)": "https://reddit.com",
-    "Reddit r/ThaiBL (Comunidad General)": "https://reddit.com",
+    "Reddit r/GirlsLove (Contenido e Instagram de Fans - 24/7 ACTIVO)": "https://reddit.com",
     "Reddit r/kpop (BLACKPINK Updates)": "https://reddit.com",
-    
-    # Canales de YouTube de Productoras, Canales Propios y Prensa Thai
     "YouTube GMMTV Oficial": "https://youtube.com",
     "YouTube IDOLFACTORY": "https://youtube.com",
     "YouTube MGI Grand TV": "https://youtube.com",
@@ -67,12 +63,10 @@ FUENTES_RSS = {
     "YouTube News Plus (Entrevistas)": "https://youtube.com",
     "YouTube Becky Armstrong Official": "https://youtube.com",
     "YouTube Solenn Entertainment": "https://youtube.com",
-    
-    # Canales de Fans en Español e Industria de Música T-Pop Populares
     "YouTube Yulirvi GL": "https://youtube.com",
     "YouTube Cindy Waratin": "https://youtube.com",
-    "YouTube T-POP Stage Show (Música)": "https://youtube.com",
-    "YouTube 4EVE Official (Grupo Pop)": "https://youtube.com"
+    "YouTube T-POP Stage Show": "https://youtube.com",
+    "YouTube 4EVE Official": "https://youtube.com"
 }
 
 class Servidor(BaseHTTPRequestHandler):
@@ -80,7 +74,7 @@ class Servidor(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-type", "text/plain")
         self.end_headers()
-        self.wfile.write(b"Bot Variedad Farandula Activo")
+        self.wfile.write(b"Bot GL Hibrido Activo")
 
     def do_HEAD(self):
         self.send_response(200)
@@ -95,12 +89,12 @@ threading.Thread(target=run_server, daemon=True).start()
 
 def enviar_a_discord(link, titulo, fuente, imagen_url=None):
     if "YouTube" in fuente:
-        prefix = "🚨 ¡¡SALIÓ CAPÍTULO O VIDEO NUEVO!! 🎬🍿"
+        prefix = "🚨 ¡¡SALIÓ CAPÍTULO O VIDEO NUEVO GL!! 🎬🍿"
     else:
-        prefix = "¡¡A CORRER QUE HAY CHISME!! 👀 🚨"
+        prefix = "¡¡A CORRER QUE HAY CHISME GL!! 👀 🚨"
 
     payload = {
-        "content": f"**{prefix}**\n\n📢 **Fuente:** {fuente}\n📌 **Título:** {titulo}\n\n✨ Enlace directo:\n{link}"
+        "content": f"**{prefix}** - Fuente: {fuente} - Titulo: {titulo} - Enlace directo: {link}"
     }
     
     if imagen_url:
@@ -127,10 +121,14 @@ def extraer_imagen(item_texto):
 
 def coincide_con_actrices(texto_a_revisar):
     texto_minusculas = texto_a_revisar.lower()
-    # BUCLE DE MONITOREO TOTALMENTE PLANO Y COMPACTO
+    for kw in KEYWORDS:
+        if kw.lower() in texto_minusculas:
+            return True
+    return False
+
 def bucle_monitoreo():
     ultimas_noticias = {}
-    print("Iniciando escaneo masivo multi-plataforma...")
+    print("Iniciando escaneo 100% sáfico...")
     
     while True:
         for nombre_fuente, url_rss in FUENTES_RSS.items():
@@ -143,12 +141,10 @@ def bucle_monitoreo():
                 texto = response.text
                 primer_item = texto[texto.find("<item>"):texto.find("</item>")+7]
                 
-                # Extraer enlace de forma directa
                 inicio_link = primer_item.find("<link>") + 6
                 fin_link = primer_item.find("</link>")
                 link_actual = primer_item[inicio_link:fin_link].strip().replace("<![CDATA[", "").replace("]]>", "")
                 
-                # Extraer título de forma directa
                 inicio_title = primer_item.find("<title>") + 7
                 fin_title = primer_item.find("</title>")
                 titulo_actual = primer_item[inicio_title:fin_title].strip().replace("<![CDATA[", "").replace("]]>", "")
@@ -157,14 +153,13 @@ def bucle_monitoreo():
                 
                 if not link_actual:
                     continue
-                    
                 if nombre_fuente not in ultimas_noticias:
                     ultimas_noticias[nombre_fuente] = link_actual
                     continue
                     
                 if link_actual != ultimas_noticias[nombre_fuente]:
                     ultimas_noticias[nombre_fuente] = link_actual
-                    if coincide_con_actrices(titulo_actual):
+                    if "r/GirlsLove" in nombre_fuente or coincide_con_actrices(titulo_actual):
                         enviar_a_discord(link_actual, titulo_actual, nombre_fuente, foto_actual)
             except Exception:
                 pass
