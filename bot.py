@@ -7,7 +7,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
-# TU LISTA MAESTRA DE FILTRADO REINTEGRADA
+# TU LISTA MAESTRA DE FILTRADO REINTEGRADA Y EXPANDIDA (100% GL)
 KEYWORDS = [
     "Freen", "Sarocha", "Chankimha", "FreenBecky", "Becky", "Armstrong", "Lingling", "Sirilak", "Kwong",
     "Orm", "Kornnaphat", "Sethratanapong", "LingOrm", "Lena", "Lalina", "Schuett", "Miu", "Natsha",
@@ -39,22 +39,25 @@ KEYWORDS = [
     "Emi", "Thasorn", "Klinnium", "Bonnie", "Pattraphus", "Borattasuwan", "Jan", "Ployshompoo", "Supasap",
     "JingJing", "Yu", "Kapook", "Ploynira", "Hiruntaveesin", "Jaoying", "Chawalitporn", "Pusomjit", "Mewnich",
     "Nannaphas", "Lertvilai", "Pahn", "Pathitta", "Pornsukchai", "Fond", "Nattanicha", "Chantaravareelekha",
-    "Oom", "Eisaya", "Hosuwan", "Bint", "Sireethorn", "Leearamwat", "Puinoon", "Warangsiri", "Tanajarusworaphat",
+    "Oom", "Eisaya", "Hosuwan", "Bint", "Sireethorn", "Leearamwat", "Puinoon", "Warangsiri", "TanAdjusted",
     "Kanyaphat", "Na", "Nakhon", "FayMay", "Neko", "Jennie", "Lisa", "Jisoo", "Rosé", "BLACKPINK", "Mie",
     "Phattaranan", "Aya", "Orapan", "Kao", "Supassara", "Thanachart", "Jane", "Methika", "Ornstein", "Natt",
     "Pitcha", "Meo-Meow", "Jennis", "Tarwaan", "Kaew", "Spy", "Yipun", "FRT", "Star Hunter", "North Star",
     "GMMTV", "CHANGE2561", "Channel 3", "IDOLFACTORY", "MGI", "Beyond", "MeMindY", "VelCurve", "MONOMAX",
     "S.NUR", "Fabel", "Motion Minds", "Kongthup", "SiamSi", "WanneeWandee", "Conversation Thailand",
-    "faridasrd", "Farida", "Solenn", "4EVE", "PP Krit", "Billkin", "Bowkylion", "Nont Tanont"
+    "faridasrd", "Farida", "Solenn", "4EVE", "PP Krit", "Billkin", "Bowkylion", "Nont Tanont", "Pluto", 
+    "Pluto The Series", "iqiyi", "iq.com",
+    "North Star Entertainment", "Change2561 & N Star Studios", "GagaOOLala", "WeTV", "WiTV", 
+    "OneD GL Spotlight", "Sapphic Signal GL Flix" # <-- NUEVAS ENTRADAS EXPANDIDAS AQUÍ
 ]
 
-# FUENTES 100% LIBRES DE BL (SOLO PORTALES THAI Y GRUPOS SÁFICOS)
+# FUENTES MULTI-PLATAFORMA REVISADAS (100% LIBRES DE BL)
 FUENTES_RSS = {
     "Daradaily (Chismes Thai)": "https://daradaily.com",
     "Sanook (Fotos Actrices)": "https://sanook.com",
     "Komchadluek (Prensa Farandula)": "https://komchadluek.net",
     "MyDramaList (Noticias de Series GL)": "https://mydramalist.com",
-    "Reddit r/GirlsLove (Contenido e Instagram de Fans - 24/7 ACTIVO)": "https://reddit.com",
+    "Reddit r/GirlsLove (Contenido de Fans - 24/7 ACTIVO)": "https://reddit.com",
     "Reddit r/kpop (BLACKPINK Updates)": "https://reddit.com",
     "YouTube GMMTV Oficial": "https://youtube.com",
     "YouTube IDOLFACTORY": "https://youtube.com",
@@ -66,7 +69,10 @@ FUENTES_RSS = {
     "YouTube Yulirvi GL": "https://youtube.com",
     "YouTube Cindy Waratin": "https://youtube.com",
     "YouTube T-POP Stage Show": "https://youtube.com",
-    "YouTube 4EVE Official": "https://youtube.com"
+    "YouTube 4EVE Official": "https://youtube.com",
+    "YouTube Channel 3 Oficial": "https://youtube.com",
+    "YouTube iQIYI Thailand": "https://youtube.com",
+    "YouTube iQIYI Spanish": "https://youtube.com"
 }
 
 class Servidor(BaseHTTPRequestHandler):
@@ -88,7 +94,9 @@ def run_server():
 threading.Thread(target=run_server, daemon=True).start()
 
 def enviar_a_discord(link, titulo, fuente, imagen_url=None):
-    if "YouTube" in fuente:
+    if "iQIYI" in fuente:
+        prefix = "🚨 ¡¡NUEVO EPISODIO O ADELANTO GL EN iQIYI!! 🎬📱"
+    elif "YouTube" in fuente:
         prefix = "🚨 ¡¡SALIÓ CAPÍTULO O VIDEO NUEVO GL!! 🎬🍿"
     else:
         prefix = "¡¡A CORRER QUE HAY CHISME GL!! 👀 🚨"
