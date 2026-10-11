@@ -3,7 +3,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
-# TU LISTA MAESTRA DE FILTRADO PURIFICADA (ACTRICES Y PAREJAS GL)
+# TU LISTA MAESTRA DE FILTRADO CON TODAS TUS PALABRAS CLAVE INCLUIDAS
 KEYWORDS = [
     "Freen", "Sarocha", "Chankimha", "FreenBecky", "Becky", "Armstrong", "Lingling", "Sirilak", "Kwong",
     "Orm", "Kornnaphat", "Sethratanapong", "LingOrm", "Lena", "Lalina", "Schuett", "Miu", "Natsha",
@@ -39,10 +39,10 @@ KEYWORDS = [
     "Kanyaphat", "Na", "Nakhon", "FayMay", "Neko", "Jennie", "Lisa", "Jisoo", "Rosé", "BLACKPINK", "Mie",
     "Phattaranan", "Aya", "Orapan", "Kao", "Supassara", "Thanachart", "Jane", "Methika", "Ornstein", "Natt",
     "Pitcha", "Meo-Meow", "Jennis", "Tarwaan", "Kaew", "Spy", "Yipun", "Farida", "Bowkylion", "Pluto", 
-    "Pluto The Series", "Pluto", "iqiyi", "iq.com"
+    "Pluto The Series", "Pluto", "iqiyi", "iq.com", "GL", "serie GL", "wlw", "reacción", "evento", "MGT"
 ]
 
-# TUS 15 ENLACES PLANOS Y CANALES DE TRANSMISIÓN DE VIDEO
+# TUS 15 ENLACES PLANOS INTEGRADOS SIN ALTERACIONES
 RutaChisme_1 = "https://daradaily.com"
 RutaChisme_2 = "https://sanook.com"
 RutaChisme_3 = "https://komchadluek.net"
@@ -95,9 +95,19 @@ FUENTES_YOUTUBE = {
     "Bowkylion": "https://youtube.com",
     "Pun Is Always Happy": "https://youtube.com",
     "Proxie TH": "https://youtube.com",
-    "Youngohm": "https://youtube.com"
+    "Youngohm": "https://youtube.com",
+    "North Star Ent": "https://youtube.com",
+    "Uprising Entertainment": "https://youtube.com",
+    "Copy A Bangkok": "https://youtube.com",
+    "Velcurve Studio": "https://youtube.com",
+    "MeMindY Official": "https://youtube.com",
+    "FRT Entertainment": "https://youtube.com",
+    "Mine Media Production": "https://youtube.com",
+    "Grow Entertainment": "https://youtube.com",
+    "Heartpop Studio": "https://youtube.com",
+    "Motion Minds": "https://youtube.com",
+    "Kongthup Production": "https://youtube.com"
 }
-
 class Servidor(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -163,9 +173,9 @@ def analizar_pagina(html_puro, url_base):
                 titulo = texto[:90]
                 resumen = texto[90:340] if len(texto) > 90 else "Haz clic en el enlace para conocer los detalles multimedia en la plataforma oficial."
                 return [(link, titulo, resumen, foto)]
-    except:
-        pass
+    except: pass
     return None
+
 def analizar_youtube(xml_puro):
     try:
         video_id = re.search(r'<yt:videoId>([^<]+)</yt:videoId>', xml_puro)
@@ -177,8 +187,7 @@ def analizar_youtube(xml_puro):
             titulo_video = title.group(1).strip()
             resumen_video = "¡Canal oficial actualizado! Ya se encuentra disponible el nuevo video, episodio completo, cancion o reaccion de la farandula GL."
             return [(link, titulo_video, resumen_video, foto)]
-    except:
-        pass
+    except: pass
     return None
 
 def coincide_con_actrices(texto_a_revisar):
@@ -187,7 +196,7 @@ def coincide_con_actrices(texto_a_revisar):
 
 def bucle_monitoreo():
     ultimas_noticias = {}
-    print("Iniciando escaneo masivo sáfico (Web + 20 YouTube)...")
+    print("Iniciando escaneo masivo sáfico (Web + 31 YouTube)...")
     while True:
         # 1. Monitoreo de Sitios Web y Plataformas
         for nombre_fuente, url in FUENTES_WEB.items():
@@ -204,7 +213,7 @@ def bucle_monitoreo():
                                 time.sleep(2)
             except: pass
 
-        # 2. Monitoreo Inmediato de los 20 canales de YouTube
+        # 2. Monitoreo Inmediato de los 31 canales de YouTube
         for nombre_canal, url_feed in FUENTES_YOUTUBE.items():
             try:
                 res = requests.get(url_feed, headers={"User-Agent": "Mozilla/5.0"}, timeout=15)
@@ -214,8 +223,9 @@ def bucle_monitoreo():
                     for link, titulo, resumen, foto in video:
                         if nombre_canal not in ultimas_noticias or link != ultimas_noticias[nombre_canal]:
                             ultimas_noticias[nombre_canal] = link
-                            enviar_a_discord(link, titulo, resumen, nombre_canal, foto, es_youtube=True)
-                            time.sleep(2)
+                            if coincide_con_actrices(titulo) or coincide_con_actrices(resumen):
+                                enviar_a_discord(link, titulo, resumen, nombre_canal, foto, es_youtube=True)
+                                time.sleep(2)
             except: pass
 
         time.sleep(450) # Escaneo continuo optimizado
