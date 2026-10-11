@@ -48,19 +48,18 @@ KEYWORDS = [
 
 # FUENTES MULTI-PLATAFORMA REVISADAS CON SUS ENLACES RSS OFICIALES COMPLETOS
 FUENTES_RSS = {
-    "BBC Mundo (Internacional)": "https://bbci.co.uk",
-    "CNN en Español (Mundial)": "https://cnn.com",
-    "Infobae (LATAM General)": "https://infobae.com",
-    "El Tiempo (Colombia/Sudam)": "https://eltiempo.com",
-    "Bangkok Post (Tailandia)": "https://bangkokpost.com",
-    "Reddit r/GirlsLove (Fans)": "https://reddit.com",
-    "Reddit r/kpop (BLACKPINK)": "https://reddit.com",
+    "Daradaily (Chismes Thai)": "https://daradaily.com",
+    "Sanook (Fotos Actrices)": "https://sanook.com",
+    "Komchadluek (Prensa Farandula)": "https://komchadluek.net",
+    "MyDramaList (Noticias de Series GL)": "https://mydramalist.com",
+    "Reddit r/GirlsLove (Contenido de Fans - 24/7 ACTIVO)": "https://reddit.com",
+    "Reddit r/kpop (BLACKPINK Updates)": "https://reddit.com",
     "YouTube GMMTV Oficial": "https://youtube.com",
     "YouTube IDOLFACTORY": "https://youtube.com",
     "YouTube MGI Grand TV": "https://youtube.com",
-    "YouTube NineEntertain": "https://youtube.com",
-    "YouTube News Plus": "https://youtube.com",
-    "YouTube Becky Armstrong": "https://youtube.com",
+    "YouTube NineEntertain (Prensa)": "https://youtube.com",
+    "YouTube News Plus (Entrevistas)": "https://youtube.com",
+    "YouTube Becky Armstrong Official": "https://youtube.com",
     "YouTube Solenn Entertainment": "https://youtube.com",
     "YouTube Yulirvi GL": "https://youtube.com",
     "YouTube Cindy Waratin": "https://youtube.com",
@@ -126,7 +125,7 @@ def coincide_con_actrices(texto_a_revisar):
 
 def bucle_monitoreo():
     ultimas_noticias = {}
-    print("Iniciando escaneo 100% safico...")
+    print("Iniciando escaneo 100% sáfico...")
     while True:
         for nombre_fuente, url_rss in FUENTES_RSS.items():
             try:
@@ -153,5 +152,8 @@ def bucle_monitoreo():
                 pass
         time.sleep(600)
 
-if __name__ == "__main__":
+def iniciar_sistema():
     bucle_monitoreo()
+
+if __name__ == '__main__':
+    iniciar_sistema()
