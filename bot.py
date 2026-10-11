@@ -3,7 +3,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
-# LISTA MAESTRA DE FILTRADO REINTEGRADA Y EXPANDIDA (100% GL)
+# TU LISTA MAESTRA DE FILTRADO REINTEGRADA Y EXPANDIDA (100% GL)
 KEYWORDS = [
     "Freen", "Sarocha", "Chankimha", "FreenBecky", "Becky", "Armstrong", "Lingling", "Sirilak", "Kwong",
     "Orm", "Kornnaphat", "Sethratanapong", "LingOrm", "Lena", "Lalina", "Schuett", "Miu", "Natsha",
