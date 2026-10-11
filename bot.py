@@ -1,13 +1,9 @@
-import os
-import time
-import requests
-import threading
-import re
+import os, time, requests, threading, re
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
-# TU LISTA MAESTRA DE FILTRADO REINTEGRADA Y EXPANDIDA (100% GL)
+# LISTA MAESTRA DE FILTRADO REINTEGRADA Y EXPANDIDA (100% GL)
 KEYWORDS = [
     "Freen", "Sarocha", "Chankimha", "FreenBecky", "Becky", "Armstrong", "Lingling", "Sirilak", "Kwong",
     "Orm", "Kornnaphat", "Sethratanapong", "LingOrm", "Lena", "Lalina", "Schuett", "Miu", "Natsha",
@@ -46,25 +42,25 @@ KEYWORDS = [
     "GMMTV", "CHANGE2561", "Channel 3", "IDOLFACTORY", "MGI", "Beyond", "MeMindY", "VelCurve", "MONOMAX",
     "S.NUR", "Fabel", "Motion Minds", "Kongthup", "SiamSi", "WanneeWandee", "Conversation Thailand",
     "faridasrd", "Farida", "Solenn", "4EVE", "PP Krit", "Billkin", "Bowkylion", "Nont Tanont", "Pluto", 
-    "Pluto The Series", "iqiyi", "iq.com",
-    "North Star Entertainment", "Change2561 & N Star Studios", "GagaOOLala", "WeTV", "WiTV", 
-    "OneD GL Spotlight", "Sapphic Signal GL Flix" # <-- NUEVAS ENTRADAS EXPANDIDAS AQUÍ
+    "Pluto The Series", "iqiyi", "iq.com", "North Star Entertainment", "Change2561 & N Star Studios", 
+    "GagaOOLala", "WeTV", "WiTV", "OneD GL Spotlight", "Sapphic Signal GL Flix"
 ]
 
-# FUENTES MULTI-PLATAFORMA REVISADAS (100% LIBRES DE BL)
+# FUENTES MULTI-PLATAFORMA REVISADAS CON SUS ENLACES RSS OFICIALES COMPLETOS
 FUENTES_RSS = {
-    "Daradaily (Chismes Thai)": "https://daradaily.com",
-    "Sanook (Fotos Actrices)": "https://sanook.com",
-    "Komchadluek (Prensa Farandula)": "https://komchadluek.net",
-    "MyDramaList (Noticias de Series GL)": "https://mydramalist.com",
-    "Reddit r/GirlsLove (Contenido de Fans - 24/7 ACTIVO)": "https://reddit.com",
-    "Reddit r/kpop (BLACKPINK Updates)": "https://reddit.com",
+    "BBC Mundo (Internacional)": "https://bbci.co.uk",
+    "CNN en Español (Mundial)": "https://cnn.com",
+    "Infobae (LATAM General)": "https://infobae.com",
+    "El Tiempo (Colombia/Sudam)": "https://eltiempo.com",
+    "Bangkok Post (Tailandia)": "https://bangkokpost.com",
+    "Reddit r/GirlsLove (Fans)": "https://reddit.com",
+    "Reddit r/kpop (BLACKPINK)": "https://reddit.com",
     "YouTube GMMTV Oficial": "https://youtube.com",
     "YouTube IDOLFACTORY": "https://youtube.com",
     "YouTube MGI Grand TV": "https://youtube.com",
-    "YouTube NineEntertain (Prensa)": "https://youtube.com",
-    "YouTube News Plus (Entrevistas)": "https://youtube.com",
-    "YouTube Becky Armstrong Official": "https://youtube.com",
+    "YouTube NineEntertain": "https://youtube.com",
+    "YouTube News Plus": "https://youtube.com",
+    "YouTube Becky Armstrong": "https://youtube.com",
     "YouTube Solenn Entertainment": "https://youtube.com",
     "YouTube Yulirvi GL": "https://youtube.com",
     "YouTube Cindy Waratin": "https://youtube.com",
@@ -81,7 +77,6 @@ class Servidor(BaseHTTPRequestHandler):
         self.send_header("Content-type", "text/plain")
         self.end_headers()
         self.wfile.write(b"Bot GL Hibrido Activo")
-
     def do_HEAD(self):
         self.send_response(200)
         self.end_headers()
@@ -100,14 +95,9 @@ def enviar_a_discord(link, titulo, fuente, imagen_url=None):
         prefix = "🚨 ¡¡SALIÓ CAPÍTULO O VIDEO NUEVO GL!! 🎬🍿"
     else:
         prefix = "¡¡A CORRER QUE HAY CHISME GL!! 👀 🚨"
-
-    payload = {
-        "content": f"**{prefix}** - Fuente: {fuente} - Titulo: {titulo} - Enlace directo: {link}"
-    }
-    
+    payload = {"content": f"**{prefix}** - Fuente: {fuente} - Titulo: {titulo} - Enlace directo: {link}"}
     if imagen_url:
         payload["embeds"] = [{"image": {"url": imagen_url}}]
-
     try:
         headers = {"User-Agent": "Mozilla/5.0"}
         requests.post(WEBHOOK_URL, json=payload, headers=headers, timeout=10)
@@ -136,8 +126,7 @@ def coincide_con_actrices(texto_a_revisar):
 
 def bucle_monitoreo():
     ultimas_noticias = {}
-    print("Iniciando escaneo 100% sáfico...")
-    
+    print("Iniciando escaneo 100% safico...")
     while True:
         for nombre_fuente, url_rss in FUENTES_RSS.items():
             try:
@@ -145,30 +134,21 @@ def bucle_monitoreo():
                 response = requests.get(url_rss, headers=headers, timeout=15)
                 if response.status_code != 200 or "<item>" not in response.text:
                     continue
-                    
                 texto = response.text
                 primer_item = texto[texto.find("<item>"):texto.find("</item>")+7]
-                
                 inicio_link = primer_item.find("<link>") + 6
                 fin_link = primer_item.find("</link>")
                 link_actual = primer_item[inicio_link:fin_link].strip().replace("<![CDATA[", "").replace("]]>", "")
-                
                 inicio_title = primer_item.find("<title>") + 7
                 fin_title = primer_item.find("</title>")
                 titulo_actual = primer_item[inicio_title:fin_title].strip().replace("<![CDATA[", "").replace("]]>", "")
-                
                 foto_actual = extraer_imagen(primer_item)
-                
-                if not link_actual:
-                    continue
-                if nombre_fuente not in ultimas_noticias:
-                    ultimas_noticias[nombre_fuente] = link_actual
-                    continue
-                    
-                if link_actual != ultimas_noticias[nombre_fuente]:
-                    ultimas_noticias[nombre_fuente] = link_actual
-                    if "r/GirlsLove" in nombre_fuente or coincide_con_actrices(titulo_actual):
-                        enviar_a_discord(link_actual, titulo_actual, nombre_fuente, foto_actual)
+                if link_actual:
+                    if nombre_fuente not in ultimas_noticias or link_actual != ultimas_noticias[nombre_fuente]:
+                        ultimas_noticias[nombre_fuente] = link_actual
+                        if "r/GirlsLove" in nombre_fuente or coincide_con_actrices(titulo_actual):
+                            enviar_a_discord(link_actual, titulo_actual, nombre_fuente, foto_actual)
+                            time.sleep(2)
             except Exception:
                 pass
         time.sleep(600)
